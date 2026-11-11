@@ -1,4 +1,6 @@
 import os
+import sys
+from pathlib import Path
 
 
 def llm():
@@ -14,18 +16,21 @@ def llm():
     )
 
 
+def skills():
+    return ["/sandbox/ame/workspace/tmp/skills/novel-writer-cn"]
+
+
 def mcps():
     from philo.config.pconfig import McpEntry
     return [
-        # McpEntry(
-        #     name="bocha-mcp",
-        #     transportType="streamableHttp",
-        #     url="https://mcp.bochaai.com/mcp",
-        #     headers={
-        #         "Authorization": "Bearer {}".format(bochaApiKey()),
-        #     },
-        #     timeout=300,
-        # )
+        McpEntry(
+            name="deepseek-search",
+            transportType="stdio",
+            command=sys.executable or "python3",
+            args=[str(Path(__file__).resolve().parents[1] / "manual" / "dsmcp.py")],
+            env={"DEEPSEEK_API_KEY": os.getenv("DEEPSEEK_API_KEY", "")},
+            timeout=120,
+        )
     ]
 
 
@@ -39,6 +44,7 @@ def pcfg():
     pcfg.workspace = "/z5s/ame/x/philo"
     pcfg.llm = llm()
     pcfg.mcpEntries = mcps()
+    pcfg.extraSkills = skills()
     pcfg.appId = os.getenv("BOT0_APPID")
     pcfg.appSecret = os.getenv("BOT0_APPSECRET")
     return pcfg

@@ -3,7 +3,7 @@ import requests
 from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP("deepseek-search")
-KEY = os.environ["DSKEY"]
+KEY = os.environ["DEEPSEEK_API_KEY"]
 HEADERS = {"Authorization": f"Bearer {KEY}", "Content-Type": "application/json"}
 
 @mcp.tool()

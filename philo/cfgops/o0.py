@@ -1,4 +1,6 @@
 import os
+import sys
+from pathlib import Path
 
 
 def llm():
@@ -15,21 +17,24 @@ def llm():
 
 
 def oneshot():
-    return "hi"
+    return "帮我生成一份类似《三体》的小说，放在工作目录下"
+
+
+def skills():
+    return ["/sandbox/ame/workspace/tmp/skills/novel-writer-cn"]
 
 
 def mcps():
     from philo.config.pconfig import McpEntry
     return [
-        # McpEntry(
-        #     name="bocha-mcp",
-        #     transportType="streamableHttp",
-        #     url="https://mcp.bochaai.com/mcp",
-        #     headers={
-        #         "Authorization": "Bearer {}".format(bochaApiKey())
-        #     },
-        #     timeout=300,
-        # )
+        McpEntry(
+            name="deepseek-search",
+            transportType="stdio",
+            command=sys.executable or "python3",
+            args=[str(Path(__file__).resolve().parents[1] / "manual" / "dsmcp.py")],
+            env={"DEEPSEEK_API_KEY": os.getenv("DEEPSEEK_API_KEY", "")},
+            timeout=120,
+        )
     ]
 
 
@@ -41,6 +46,7 @@ def pcfg():
     pcfg.llm = llm()
     pcfg.oneshotInput = oneshot()
     pcfg.mcpEntries = mcps()
+    pcfg.extraSkills = skills()
     return pcfg
 
 
