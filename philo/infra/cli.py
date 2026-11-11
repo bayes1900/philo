@@ -16,7 +16,8 @@ class PhiloCli(object):
         self.cliDir: Path = self.pcfg.agentSpace / "cli"
         self.cliDir.mkdir(parents=True, exist_ok=True)
         self.cliHistoryFile = self.cliDir / pcfg.cfgname
-        self.console = Console()
+        colorSystem = None if getattr(pcfg, "noColor", False) else "auto"
+        self.console = Console(highlight=False, color_system=colorSystem)
         self.promptSession = None
         self.savedTermiosAttrs = None
 

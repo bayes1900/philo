@@ -1,11 +1,15 @@
 import os
+import re
 import sys
+from pathlib import Path
 from tqdm import tqdm
 from datetime import datetime
 from inspect import currentframe, getframeinfo
 
 
 class BayesLogger(object):
+    ANSI_PATTERN = re.compile(r"\x1b\[[0-9;]*m")
+
     def __init__(self):
         self.logf = None
         self.verbose = True
@@ -24,13 +28,19 @@ class BayesLogger(object):
     def setLogFile(self, filename):
         if self.logf is not None:
             self.logf.close()
-        self.logf = open(filename, "w")
+        Path(filename).parent.mkdir(parents=True, exist_ok=True)
+        self.logf = open(filename, "a", encoding="utf-8")
+
+    def close(self):
+        if self.logf is not None:
+            self.logf.close()
+            self.logf = None
 
     def log(self, content, muted=False):
         if muted:
             return
         if self.logf is not None:
-            self.logf.write(content + "\n")
+            self.logf.write(self.ANSI_PATTERN.sub("", content) + "\n")
             self.logf.flush()
             return
         tqdm.write(content, file=sys.stdout)

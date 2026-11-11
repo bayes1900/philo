@@ -18,7 +18,8 @@ class PhiloLoop(object):
         self.sessionManager = SessionManager(self.pcfg.agentSpace)
         self.contextBuilder = ContextBuilder(self.pcfg)
         self.toolManager = self.initToolManager()
-        self.mcpManager = McpManager(self.toolManager, self.pcfg.mcpEntries)
+        logDir = self.pcfg.agentSpace / "logs" if self.pcfg.agentSpace is not None else None
+        self.mcpManager = McpManager(self.toolManager, self.pcfg.mcpEntries, logDir=logDir)
         for tool in self.pcfg.extraTools:
             self.toolManager.register(tool)
         for skill in self.pcfg.extraSkills:
@@ -229,7 +230,8 @@ class PhiloLoop(object):
                     await onProgressCallback(msg, response.content)
                     if response.reasoningContent:
                         await onProgressCallback(msg, response.reasoningContent, reasoning=True)
-                    await onProgressCallback(msg, response.formatToolHint(), toolHint=True)
+                    if not any(tc.name == "ask_user" for tc in response.toolCalls):
+                        await onProgressCallback(msg, response.formatToolHint(), toolHint=True)
                 if response.reasoningContent:
                     self.lastReasoningContent = response.reasoningContent
 

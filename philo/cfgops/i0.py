@@ -15,7 +15,9 @@ def llm():
 
 
 def skills():
-    return ["/sandbox/ame/workspace/tmp/skills/novel-writer-cn"]
+    return [
+        "/sandbox/ame/workspace/tmp/skills/novel-writer-cn"
+    ]
 
 
 def mcps():
@@ -33,7 +35,7 @@ def mcps():
 
 
 def name():
-    return "inter0"
+    return "inter1"
 
 
 def pcfg():

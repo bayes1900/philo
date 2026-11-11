@@ -78,6 +78,8 @@ class PhiloEngineBase(object):
             try:
                 msg = await asyncio.wait_for(self.bus.readOutbound(), timeout=1.0)
                 if msg.metadata.get("progress"):
+                    if getattr(self, "askingUser", False):
+                        continue
                     if msg.metadata.get("reasoning"):
                         self.cli.print(f"  [italic bright_white on default]💭 {msg.content}[/italic bright_white on default]")
                     else:

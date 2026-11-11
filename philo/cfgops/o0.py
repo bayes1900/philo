@@ -21,7 +21,9 @@ def oneshot():
 
 
 def skills():
-    return ["/sandbox/ame/workspace/tmp/skills/novel-writer-cn"]
+    return [
+        "/sandbox/ame/workspace/tmp/skills/novel-writer-cn"
+    ]
 
 
 def mcps():
@@ -41,7 +43,7 @@ def mcps():
 
 def pcfg():
     from philo.config.pconfig import PhiloConfig
-    pcfg = PhiloConfig("oneshot0")
+    pcfg = PhiloConfig("oneshot2")
     pcfg.workspace = "/z5s/ame/x/philo"
     pcfg.llm = llm()
     pcfg.oneshotInput = oneshot()

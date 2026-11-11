@@ -9,9 +9,10 @@ from philo.tools.mcp import McpToolWrapper
 
 
 class McpManager(object):
-    def __init__(self, toolManager: ToolManager, mcpEntries: List[McpEntry]):
+    def __init__(self, toolManager: ToolManager, mcpEntries: List[McpEntry], logDir=None):
         self.toolManager = toolManager
         self.mcpEntries = mcpEntries
+        self.logDir = logDir
         self.connected = False
         self.connecting = False
         self.mcpStack: AsyncExitStack | None = None
@@ -71,7 +72,16 @@ class McpManager(object):
                         args=mcpEntry.args,
                         env=mcpEntry.env or None
                     )
-                    read, write = await self.mcpStack.enter_async_context(stdio_client(params))
+                    if self.logDir is not None:
+                        self.logDir.mkdir(parents=True, exist_ok=True)
+                        errlog = self.mcpStack.enter_context(
+                            open(self.logDir / f"mcp-{mcpEntry.name}.log", "a", encoding="utf-8")
+                        )
+                        read, write = await self.mcpStack.enter_async_context(
+                            stdio_client(params, errlog=errlog)
+                        )
+                    else:
+                        read, write = await self.mcpStack.enter_async_context(stdio_client(params))
                 elif transportType == "sse":
                     def httpx_client_factory(
                         headers: dict[str, str] | None = None,

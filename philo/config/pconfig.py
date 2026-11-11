@@ -22,6 +22,9 @@ class PhiloConfig(object):
         self.cfgname = cfgname
         self.nobuf = False
         self.verbose = True
+        self.quiet = False
+        self.noColor = False
+        self.logFile = None
         self.workspace = None
         self.agentSpace = None
         self.llm = None
@@ -56,9 +59,16 @@ class PhiloConfig(object):
     def enrichArgs(self):
         parser = argparse.ArgumentParser()
         parser.add_argument("-nobuf", action="store_true")
+        parser.add_argument("-quiet", action="store_true")
+        parser.add_argument("-no-color", action="store_true")
+        parser.add_argument("-log", dest="logFile", type=str, default=None)
         parser.add_argument("-i", dest="oneshotInput", type=str, default=None)
         args, _ = parser.parse_known_args()
         self.nobuf = args.nobuf
+        self.quiet = args.quiet
+        self.noColor = args.no_color
+        if args.logFile is not None:
+            self.logFile = args.logFile
         if args.oneshotInput is not None:
             self.oneshotInput = args.oneshotInput
 
@@ -80,5 +90,7 @@ class PhiloConfig(object):
             raise ValueError("Llm not set")
         self.enrichArgs()
         from philo.utils.log import log
-        log.verbose = self.verbose
+        log.verbose = self.verbose and not self.quiet
+        if self.logFile is not None:
+            log.setLogFile(self.logFile)
         return self

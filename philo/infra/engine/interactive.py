@@ -3,6 +3,7 @@ from philo.utils.log import log
 from philo.config.pconfig import PhiloConfig
 from philo.infra.bus import InboundMessage
 from philo.infra.engine.base import PhiloEngineBase
+from philo.tools.askuser import AskUserTool
 
 
 class PhiloInteractiveEngine(PhiloEngineBase):
@@ -11,9 +12,36 @@ class PhiloInteractiveEngine(PhiloEngineBase):
         self.channel = "cli"
         self.senderId = "user"
         self.chatId = self.pcfg.cfgname
+        self.askingUser = False
+        self.activeStatus = None
+        self.loop.toolManager.register(AskUserTool(self.askUser))
+
+    def setupLogging(self):
+        if self.pcfg.logFile is not None:
+            return
+        logDir = self.pcfg.agentSpace / "logs"
+        logDir.mkdir(parents=True, exist_ok=True)
+        self.pcfg.logFile = str(logDir / "interactive.log")
+        log.setLogFile(self.pcfg.logFile)
+
+    async def askUser(self, question: str) -> str:
+        self.askingUser = True
+        status = self.activeStatus
+        if status is not None:
+            status.stop()
+        try:
+            self.cli.flushPendingTtyInput()
+            self.cli.print(f"\n[bold yellow]Philo asks:[/bold yellow] {question}")
+            return await self.cli.readInteractiveInput()
+        finally:
+            self.askingUser = False
+            if status is not None:
+                status.start()
 
     async def runInteractive(self):
+        self.setupLogging()
         log.cyan("Philo running interactively")
+        self.cli.print(f"[dim]Logs: {self.pcfg.logFile}[/dim]")
         self.cli.initPromptSession()
         inboundTask = asyncio.create_task(self.runInboundLoop())
         outboundTask = asyncio.create_task(self.runOutboundLoop())
@@ -40,14 +68,16 @@ class PhiloInteractiveEngine(PhiloEngineBase):
                 ))
                 # Create thinking status with real-time token updates
                 status = self.cli.createThinkingStatus()
+                self.activeStatus = status
                 stopUpdate = False
 
                 async def updateThinkingStatus():
                     with status:
                         while not stopUpdate:
                             try:
-                                stats = self.loop.getTokenUsageStats()
-                                status.update(self.cli.buildThinkingStatusText(stats))
+                                if not self.askingUser:
+                                    stats = self.loop.getTokenUsageStats()
+                                    status.update(self.cli.buildThinkingStatusText(stats))
                                 await asyncio.sleep(0.3)
                             except Exception:
                                 await asyncio.sleep(0.3)
@@ -62,6 +92,7 @@ class PhiloInteractiveEngine(PhiloEngineBase):
                         await updateTask
                     except asyncio.CancelledError:
                         pass
+                    self.activeStatus = None
 
                 for item in self.agentResponseList:
                     self.cli.renderMarkdown(item)
