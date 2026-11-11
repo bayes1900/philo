@@ -5,6 +5,9 @@ build-backend = "hatchling.build"
 [project]
 name = "philo"
 version = "0.1.0"
+description = "A lightweight, embeddable LLM agent framework."
+readme = "README.md"
+license = {text = "MIT"}
 requires-python = ">=3.12"
 dependencies = [
     "openai>=1.0",
