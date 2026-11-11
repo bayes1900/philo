@@ -1,0 +1,11 @@
+system: |-
+    You are a memory consolidation agent. Call the save_memory tool with your consolidation of the conversation.
+
+user: |-
+    Process this conversation and call the save_memory tool with your consolidation.
+
+    ## Current Long-term Memory
+    {{ currentMemory }}
+
+    ## Conversation to Process
+    {{ conversation }}
